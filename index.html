@@ -1727,5 +1727,34 @@ function tourInit(){
   if (/[?&]tour\b/.test(Q) && C.tour) tourInit();
 })();
 </script>
+<script>
+/* visit tracking — Adapty's site analytics (the same tracking code as adapty.io). Per-person links: ?r=<tag>.
+   Every milestone is a virtual page view under /bigvu-flow-rebuild/<tag>/…, so the page report shows who got how far.
+   Off for renders (?phone/?shot/?tour/?hero), local files and localhost. */
+(function(){
+  if (SHOT || HERO || location.protocol === 'file:' || /^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) return;
+  var m = /[?&]r=([a-z0-9-]{1,24})(?:&|$)/i.exec(location.search), who = m ? m[1].toLowerCase() : 'direct';
+  var app = /[?&]app\b/.test(location.search), base = '/bigvu-flow-rebuild/' + who + '/', seen = {}, hsq = window._hsq = window._hsq || [];
+  hsq.push(['setPath', base + (app ? 'app' : '')]);              /* the loader's own first page view: the open */
+  function hit(step){ if (seen[step]) return; seen[step] = 1; hsq.push(['setPath', base + step]); hsq.push(['trackPageView']); }
+  var s = document.createElement('script'); s.id = 'hs-script-loader'; s.async = true; s.defer = true; s.src = 'https://js.hs-scripts.com/21181174.js';
+  document.head.appendChild(s);
+  /* keep the tag on the "Open it full screen" button */
+  var mob = document.querySelector('#qrMob a'); if (mob && m) mob.setAttribute('href', '?app&r=' + who);
+  /* milestones: saw the prototype · tapped a screen · reached the paywall · opened the offer · played the video */
+  var proto = document.getElementById('prototype');
+  if (!app && proto && 'IntersectionObserver' in window) new IntersectionObserver(function(es, o){
+    if (es.some(function(e){ return e.isIntersecting; })) { hit('prototype'); o.disconnect(); }
+  }, {threshold: .35}).observe(proto);
+  var prev = window.onEnter;
+  window.onEnter = function(id, S){
+    if (prev) prev(id, S);
+    hit('tapped');
+    if (id === 'paywall') hit('paywall');
+    if (id === 'offer') hit('offer');
+  };
+  var hv = document.getElementById('heroVideo'); if (hv) hv.addEventListener('click', function(){ hit('video'); });
+})();
+</script>
 </body>
 </html>
